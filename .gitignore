@@ -1,0 +1,17 @@
+# [MAIN]
+*.code-workspace
+.pylintrc
+*.zip
+
+# [TERRAFORM]
+variables.tf
+
+*.tfvars
+.terraform*
+.terraform.lock.hcl
+*.tfstate*
+
+# [WEATHER_NOTIFICATION]
+weather_notification/*
+!weather_notification/main.py
+!weather_notification/requirements.txt
