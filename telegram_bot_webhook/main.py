@@ -1,19 +1,23 @@
 import boto3
 import json
+import os
 
 
 def lambda_handler(event, context):
-    client = boto3.client("lambda")
+    print("event:", event)
 
-    function_name = "weatherNotification"
+    content = json.loads(event['body'])
+    telegram_chat_id = content["message"]["chat"]["id"]
+    input = content["message"]["text"]
+    city_name = None if input == "/start" else input
 
-    TELEGRAM_CHAT_ID = "-1001800796471"
-    CITY_NAME = "Katowice"
     payload = {
-        "telegram_chat_id": TELEGRAM_CHAT_ID,
-        "city_name": CITY_NAME,
+        "telegram_chat_id": telegram_chat_id,
+        "city_name": city_name,
     }
 
+    client = boto3.client("lambda")
+    function_name = os.environ.get("WEATHER_NOTIFICATION_LAMBDA")
     client.invoke(
         FunctionName=function_name,
         InvocationType="Event",

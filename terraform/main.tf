@@ -25,7 +25,11 @@ resource "aws_lambda_function" "telegram_bot_webhook" {
   role             = aws_iam_role.iam_lambda.arn
   handler          = "main.lambda_handler"
   runtime          = "python3.10"
-
+  environment {
+    variables = {
+      WEATHER_NOTIFICATION_LAMBDA = aws_lambda_function.weather_notification.function_name
+    }
+  }
 }
 
 resource "aws_iam_role" "iam_lambda" {
@@ -132,6 +136,42 @@ resource "aws_iam_role_policy_attachment" "telegram_bot_webhook_logs_attach" {
   role       = aws_iam_role.iam_lambda.name
   policy_arn = aws_iam_policy.telegram_bot_webhook_logging.arn
 }
+
+resource "aws_iam_policy" "invoke_weather_notification_policy" {
+  name        = "InvokeWeatherNotificationPolicy"
+  description = "Allows invoking weather notification lambda"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "lambda:InvokeFunction"
+        ],
+        Resource = "arn:aws:lambda:${var.aws_region}:${var.aws_account_id}:function:${aws_lambda_function.weather_notification.function_name}",
+        Effect   = "Allow"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "invoke_weather_notification_attach" {
+  role       = aws_iam_role.iam_lambda.name
+  policy_arn = aws_iam_policy.invoke_weather_notification_policy.arn
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
