@@ -23,3 +23,14 @@ def lambda_handler(event, context):
         InvocationType="Event",
         Payload=json.dumps(payload),
     )
+
+    if input != "/start":
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table(os.environ.get("TABLE_NAME"))
+
+        table.put_item(
+            Item={
+                'chat_id': str(telegram_chat_id),
+                'city_name': str(city_name)
+            }
+        )
