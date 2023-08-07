@@ -6,7 +6,7 @@
 
 ## Login to AWS and create secrets for WEATHER_API_KEY, TELEGRAM_TOKEN
 
-## Rename variables.example.tf to variables.tf and fill out with your data
+## Rename variables.example to variables.tf and fill out with your data
 
 ## Install requirements
 
@@ -28,4 +28,15 @@ terraform init
 terraform plan
 terraform apply
 terraform destroy
+```
 
+As a result of Terraform execution copy function_url from output
+
+- Set your webhook url
+
+```html
+https://api.telegram.org/bot><TELEGRAM_TOKEN>/setWebhook?url=<FUNCTION_URL>
+```
+```html
+https://api.telegram.org/bot><TELEGRAM_TOKEN>/deleteWebhook
+```

@@ -6,7 +6,7 @@ resource "aws_lambda_function" "weather_notification" {
   filename         = var.weather_notification_zip_path
   source_code_hash = filebase64sha256(var.weather_notification_zip_path)
   function_name    = "weatherNotification"
-  role             = aws_iam_role.lambda_exec.arn
+  role             = aws_iam_role.iam_lambda.arn
   handler          = "main.lambda_handler"
   runtime          = "python3.10"
 
@@ -22,14 +22,14 @@ resource "aws_lambda_function" "telegram_bot_webhook" {
   filename         = var.telegram_bot_webhook_zip_path
   source_code_hash = filebase64sha256(var.telegram_bot_webhook_zip_path)
   function_name    = "TelegramBotWebhook"
-  role             = aws_iam_role.lambda_exec.arn
+  role             = aws_iam_role.iam_lambda.arn
   handler          = "main.lambda_handler"
   runtime          = "python3.10"
 
 }
 
-resource "aws_iam_role" "lambda_exec" {
-  name = "lambda_exec_role"
+resource "aws_iam_role" "iam_lambda" {
+  name = "iam_lambda_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -63,16 +63,75 @@ resource "aws_iam_policy" "secrets_access" {
 }
 
 resource "aws_iam_role_policy_attachment" "secrets_lambda_attach" {
-  role       = aws_iam_role.lambda_exec.name
+  role       = aws_iam_role.iam_lambda.name
   policy_arn = aws_iam_policy.secrets_access.arn
 }
 
+resource "aws_lambda_function_url" "lambda_function_url" {
+  function_name      = aws_lambda_function.weather_notification.arn
+  authorization_type = "NONE"
+}
 
 
+resource "aws_cloudwatch_log_group" "weather_notification_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.weather_notification.function_name}"
+  retention_in_days = 7
+}
 
+resource "aws_iam_policy" "weather_notification_logging" {
+  name        = "WeatherNotificationLoggingPolicy"
+  description = "Allows a weatherNotification to write logs to CloudWatch."
 
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.weather_notification.function_name}:*"
+      }
+    ]
+  })
+}
 
+resource "aws_iam_role_policy_attachment" "weather_notification_logs_attach" {
+  role       = aws_iam_role.iam_lambda.name
+  policy_arn = aws_iam_policy.weather_notification_logging.arn
+}
 
+resource "aws_cloudwatch_log_group" "telegram_bot_webhook_log" {
+  name              = "/aws/lambda/${aws_lambda_function.telegram_bot_webhook.function_name}"
+  retention_in_days = 7
+}
+
+resource "aws_iam_policy" "telegram_bot_webhook_logging" {
+  name        = "TelegramBotWebhookLoggingPolicy"
+  description = "Allows a TelegramBotWebhook to write logs to CloudWatch."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.telegram_bot_webhook.function_name}:*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "telegram_bot_webhook_logs_attach" {
+  role       = aws_iam_role.iam_lambda.name
+  policy_arn = aws_iam_policy.telegram_bot_webhook_logging.arn
+}
 
 
 
