@@ -15,3 +15,8 @@ variables.tf
 weather_notification/*
 !weather_notification/main.py
 !weather_notification/requirements.txt
+
+# [TELEGRAM BOT WEBHOOK]
+telegram_bot_webhook/*
+!telegram_bot_webhook/main.py
+!telegram_bot_webhook/requirements.txt

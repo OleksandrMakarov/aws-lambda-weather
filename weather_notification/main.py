@@ -12,7 +12,8 @@ def get_secrets():
 
 
 def lambda_handler(event, context):
-    print("Hello World!")
+    print("event:", event)
+    print("context:", context)
     secrets = get_secrets()
 
     WEATHER_API_KEY = secrets["WEATHER_API_KEY"]

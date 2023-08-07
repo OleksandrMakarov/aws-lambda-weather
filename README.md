@@ -35,8 +35,8 @@ As a result of Terraform execution copy function_url from output
 - Set your webhook url
 
 ```html
-https://api.telegram.org/bot><TELEGRAM_TOKEN>/setWebhook?url=<FUNCTION_URL>
+https://api.telegram.org/bot<TELEGRAM_TOKEN>/setWebhook?url=<FUNCTION_URL>
 ```
 ```html
-https://api.telegram.org/bot><TELEGRAM_TOKEN>/deleteWebhook
+https://api.telegram.org/bot<TELEGRAM_TOKEN>/deleteWebhook
 ```

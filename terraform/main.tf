@@ -68,7 +68,7 @@ resource "aws_iam_role_policy_attachment" "secrets_lambda_attach" {
 }
 
 resource "aws_lambda_function_url" "lambda_function_url" {
-  function_name      = aws_lambda_function.weather_notification.arn
+  function_name      = aws_lambda_function.telegram_bot_webhook.arn
   authorization_type = "NONE"
 }
 
