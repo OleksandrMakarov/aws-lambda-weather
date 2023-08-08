@@ -40,6 +40,9 @@ def get_weather_message(city_name):
 
 
 def send_telegram_message(message, chat_id):
+    if not message or not chat_id:
+        return
+
     requests.get(
         f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
     )
