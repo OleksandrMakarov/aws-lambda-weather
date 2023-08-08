@@ -1,4 +1,7 @@
 import os
+import sys
+
+sys.path.append("libs")
 import requests
 import boto3
 
@@ -29,7 +32,7 @@ def get_weather_message(city_name):
     )
     weather_data = response.json()
     if not weather_data or weather_data.get("cod") != 200:
-        return
+        return "Please enter a different city name or try again later."
 
     message = (
         f"Weather in {city_name.capitalize()}\n"

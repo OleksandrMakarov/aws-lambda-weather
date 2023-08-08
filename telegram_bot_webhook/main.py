@@ -1,6 +1,9 @@
-import boto3
-import json
 import os
+import sys
+import json
+
+sys.path.append("libs")
+import boto3
 
 FUNCTION_NAME = os.environ.get("WEATHER_NOTIFICATION_LAMBDA")
 TABLE_NAME = os.environ.get("TABLE_NAME")
