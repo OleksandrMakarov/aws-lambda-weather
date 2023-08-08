@@ -11,9 +11,9 @@ Bot will send weather notification for provided city hourly. If it needs to chan
 - terraform
 - pip package manager
 
-## Next AWS resources will be created
+## AWS resources will be created
 
-- Lambda (bot webhook and weather notification)
+- Lambda (bot webhook and weather notification service)
 - DynamoDB (store chat id and city name for every user)
 - CloudWatch (logs storage)
 - EventBridge (rules for cron event)
@@ -62,7 +62,7 @@ code "terraform\variables.tf"
 
 ## 5. Install requirements for lambda function
 
-Please prowide next commands to create libs folder for both lambda functions and create zip archives
+Please run next commands to create libs folder for both lambda functions and create zip archives
 
 - for weather notification function
 
@@ -82,25 +82,46 @@ pip install -r requirements.txt -t ./libs/
 Compress-Archive -Force -Path * -DestinationPath .\..\telegram_bot_webhook.zip
 ```
 
-## Create AWS infrastructure using Terraform
+## 6. Create AWS infrastructure using Terraform
 
+Please run next commands to create AWS infrastructure and get links to set up and delete webhook.
 
+It needs to confirm operation during **terraform apply**, or add flag **-auto-approve**
+
+```powershell
 cd ~\aws-lambda-weather\terraform
-
 terraform init
 terraform plan
 terraform apply
-terraform destroy
 ```
 
-As a result of Terraform execution copy function_url from output
+As a result next output values will be received on terminal.
 
-- Set your webhook url
+Use ***deleteWebhook_url*** to delete previous webhook or reassure that previous webhook is deleted.
+
+Use ***setWebhook_url*** to set up new web hook on Telegram API
+
+It needs to use this links before first infrastructure use or after destroying Terraform infrastructure and reapply it.
+
+- deleteWebhook_url =
+
+```html
+https://api.telegram.org/bot<TELEGRAM_TOKEN>/deleteWebhook"
+```
+
+- setWebhook_url =
 
 ```html
 https://api.telegram.org/bot<TELEGRAM_TOKEN>/setWebhook?url=<FUNCTION_URL>
 ```
 
-```html
-https://api.telegram.org/bot<TELEGRAM_TOKEN>/deleteWebhook
+## 7. Destroy infrastructure
+
+To destroy infrastructure use next commands.
+
+It needs to confirm operation during **terraform destroy**, or add flag **-auto-approve**
+
+```powershell
+cd ~\aws-lambda-weather\terraform
+terraform destroy
 ```
