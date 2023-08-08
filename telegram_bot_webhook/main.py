@@ -2,13 +2,24 @@ import boto3
 import json
 import os
 
+FUNCTION_NAME = os.environ.get("WEATHER_NOTIFICATION_LAMBDA")
+TABLE_NAME = os.environ.get("TABLE_NAME")
+
 
 def lambda_handler(event, context):
     print("event:", event)
 
-    content = json.loads(event['body'])
-    telegram_chat_id = content["message"]["chat"]["id"]
-    input = content["message"]["text"]
+    body = event.get("body")
+    content = json.loads(body)
+    message = content.get("message")
+    chat = message.get("chat")
+    telegram_chat_id = chat.get("id")
+    raw_input = message.get("text")
+
+    if not raw_input or not telegram_chat_id:
+        return
+
+    input = raw_input[:30]
     city_name = None if input == "/start" else input
 
     payload = {
@@ -17,20 +28,34 @@ def lambda_handler(event, context):
     }
 
     client = boto3.client("lambda")
-    function_name = os.environ.get("WEATHER_NOTIFICATION_LAMBDA")
     client.invoke(
-        FunctionName=function_name,
+        FunctionName=FUNCTION_NAME,
         InvocationType="Event",
         Payload=json.dumps(payload),
     )
 
+    # if input != "/start":
+    #     dynamodb = boto3.resource('dynamodb')
+    #     table = dynamodb.Table(TABLE_NAME)
+
+    #     table.put_item(
+    #         Item={
+    #             'chat_id': str(telegram_chat_id),
+    #             'city_name': str(city_name),
+    #         },
+    #         ConditionExpression='attribute_not_exists(chat_id)'
+    #     )
+
     if input != "/start":
         dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table(os.environ.get("TABLE_NAME"))
+        table = dynamodb.Table(TABLE_NAME)
 
-        table.put_item(
-            Item={
-                'chat_id': str(telegram_chat_id),
-                'city_name': str(city_name)
-            }
+        table.update_item(
+            Key={
+                'chat_id': str(telegram_chat_id)
+            },
+            UpdateExpression="SET city_name = :city_name",
+            ExpressionAttributeValues={
+                ':city_name': str(city_name)
+            },
         )

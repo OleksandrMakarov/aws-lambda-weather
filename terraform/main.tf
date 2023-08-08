@@ -14,6 +14,7 @@ resource "aws_lambda_function" "weather_notification" {
     variables = {
       REGION_NAME     = var.aws_region
       AWS_SECRET_NAME = var.aws_secret_name
+      TABLE_NAME = aws_dynamodb_table.telegram_bot_users.name
     }
   }
 }
@@ -61,7 +62,7 @@ resource "aws_iam_policy" "secrets_access" {
       {
         Effect   = "Allow",
         Action   = "secretsmanager:GetSecretValue",
-        Resource = var.arn_secrets_manager
+        Resource = aws_secretsmanager_secret.bot_secrets.arn
       }
     ]
   })
@@ -149,7 +150,7 @@ resource "aws_iam_policy" "invoke_weather_notification_policy" {
         Action = [
           "lambda:InvokeFunction"
         ],
-        Resource = "arn:aws:lambda:${var.aws_region}:${var.aws_account_id}:function:${aws_lambda_function.weather_notification.function_name}",
+        Resource = aws_lambda_function.weather_notification.arn,
         Effect   = "Allow"
       }
     ]
@@ -195,43 +196,35 @@ resource "aws_iam_role_policy" "telegram_bot_users_policy" {
 }
 
 
+resource "aws_cloudwatch_event_rule" "daily_trigger" {
+  name                = "DailyWeatherNotification"
+  description         = "Triggers the weather notification lambda daily"
+  schedule_expression = "rate(10 minutes)"
+}
 
+resource "aws_cloudwatch_event_target" "trigger_lambda" {
+  rule      = aws_cloudwatch_event_rule.daily_trigger.name
+  arn       = aws_lambda_function.weather_notification.arn
+  input     = "{\"scheduler\":\"True\"}"
+}
 
+resource "aws_lambda_permission" "allow_cloudwatch" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.weather_notification.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.daily_trigger.arn
+}
 
+resource "aws_secretsmanager_secret" "bot_secrets" {
+  name = var.aws_secret_name
+  recovery_window_in_days = 0
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# resource "aws_cloudwatch_event_rule" "daily_trigger" {
-#   name                = "DailyWeatherNotification"
-#   description         = "Triggers the weather notification lambda daily"
-#   schedule_expression = "rate(1 day)"
-# }
-
-# resource "aws_cloudwatch_event_target" "trigger_lambda" {
-#   rule      = aws_cloudwatch_event_rule.daily_trigger.name
-#   arn       = aws_lambda_function.weather_notification.arn
-# }
-
-# resource "aws_lambda_permission" "allow_cloudwatch" {
-#   statement_id  = "AllowExecutionFromCloudWatch"
-#   action        = "lambda:InvokeFunction"
-#   function_name = aws_lambda_function.weather_notification.function_name
-#   principal     = "events.amazonaws.com"
-#   source_arn    = aws_cloudwatch_event_rule.daily_trigger.arn
-# }
+resource "aws_secretsmanager_secret_version" "bot_secrets_version" {
+  secret_id     = aws_secretsmanager_secret.bot_secrets.id
+  secret_string = jsonencode({
+    WEATHER_API_KEY = var.weather_api_key,
+    TELEGRAM_TOKEN  = var.telegram_token
+  })
+}
