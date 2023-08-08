@@ -66,7 +66,7 @@ def lambda_handler(event, context):
     if city_name is None:
         message = (
             "Please provide the city name. "
-            "You'll received notifications hourly. "
+            "You'll be received notifications hourly. "
             "To change the city name, just type a new city name in chat"
         )
     else:
