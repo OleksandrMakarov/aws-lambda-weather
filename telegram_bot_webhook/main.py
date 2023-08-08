@@ -10,6 +10,9 @@ def lambda_handler(event, context):
     print("event:", event)
 
     body = event.get("body")
+    if not body:
+        return
+
     content = json.loads(body)
     message = content.get("message")
     chat = message.get("chat")
@@ -33,18 +36,6 @@ def lambda_handler(event, context):
         InvocationType="Event",
         Payload=json.dumps(payload),
     )
-
-    # if input != "/start":
-    #     dynamodb = boto3.resource('dynamodb')
-    #     table = dynamodb.Table(TABLE_NAME)
-
-    #     table.put_item(
-    #         Item={
-    #             'chat_id': str(telegram_chat_id),
-    #             'city_name': str(city_name),
-    #         },
-    #         ConditionExpression='attribute_not_exists(chat_id)'
-    #     )
 
     if input != "/start":
         dynamodb = boto3.resource('dynamodb')

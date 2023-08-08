@@ -28,24 +28,25 @@ def get_weather_message(city_name):
         f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={WEATHER_API_KEY}"
     )
     weather_data = response.json()
+    print(weather_data)
     message = f"Weather in {city_name}: {weather_data['weather'][0]['description']}"
     return message
 
 
 def send_telegram_message(message, chat_id):
     requests.get(
-                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
-            )
+        f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
+    )
 
 
 def lambda_handler(event, context):
     print("event:", event)
-    print("is event none:", event is None)
-    schedule_details = event.get("detail")
-    if schedule_details.get("schedule"):
+    is_scheduled = event.get("schedule")
+    if is_scheduled:
         users = get_users_db()
-        print("users:", users)
-        for chat_id, city_name in users:
+        for user in users:
+            city_name = user.get("city_name")
+            chat_id = user.get("chat_id")
             message = get_weather_message(city_name)
             send_telegram_message(message, chat_id)
         return
@@ -54,11 +55,13 @@ def lambda_handler(event, context):
     city_name = event.get("city_name")
 
     if not telegram_chat_id:
-        print("not chat_id")
         return
 
     if city_name is None:
-        message = "Please provide your city name"
+        message = (
+            "Please provide your city name. "
+            "If you decide to change city name, just type a new city name"
+        )
     else:
         message = get_weather_message(city_name)
 

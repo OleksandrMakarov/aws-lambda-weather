@@ -186,7 +186,9 @@ resource "aws_iam_role_policy" "telegram_bot_users_policy" {
     Statement = [
       {
         Action = [
-          "dynamodb:PutItem"
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Scan",
         ],
         Resource = aws_dynamodb_table.telegram_bot_users.arn
         Effect   = "Allow"
@@ -205,7 +207,7 @@ resource "aws_cloudwatch_event_rule" "daily_trigger" {
 resource "aws_cloudwatch_event_target" "trigger_lambda" {
   rule      = aws_cloudwatch_event_rule.daily_trigger.name
   arn       = aws_lambda_function.weather_notification.arn
-  input     = "{\"scheduler\":\"True\"}"
+  input     = "{\"schedule\":\"True\"}"
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch" {
