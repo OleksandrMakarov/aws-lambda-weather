@@ -25,11 +25,17 @@ def get_users_db():
 
 def get_weather_message(city_name):
     response = requests.get(
-        f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={WEATHER_API_KEY}"
+        f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={WEATHER_API_KEY}&units=metric"
     )
     weather_data = response.json()
-    print(weather_data)
-    message = f"Weather in {city_name}: {weather_data['weather'][0]['description']}"
+    if not weather_data or weather_data.get('cod') != 200:
+        return
+
+    message = (
+        f"Weather in {city_name}\n"
+        f"Temperature: {weather_data['main']['temp']} °C, {weather_data['weather'][0]['description']}\n"
+        f"Wind: {weather_data['wind']['speed']} m/s"
+    )
     return message
 
 
