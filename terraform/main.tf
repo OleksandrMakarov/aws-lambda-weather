@@ -201,7 +201,7 @@ resource "aws_iam_role_policy" "telegram_bot_users_policy" {
 resource "aws_cloudwatch_event_rule" "daily_trigger" {
   name                = "DailyWeatherNotification"
   description         = "Triggers the weather notification lambda daily"
-  schedule_expression = "rate(10 minutes)"
+  schedule_expression = "cron(0 * * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "trigger_lambda" {
