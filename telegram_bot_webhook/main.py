@@ -8,16 +8,17 @@ TABLE_NAME = os.environ.get("TABLE_NAME")
 
 def lambda_handler(event, context):
     print("event:", event)
+    try:
+        body = event.get("body")
+        content = json.loads(body)
+        message = content.get("message")
+        chat = message.get("chat")
+        telegram_chat_id = chat.get("id")
+        raw_input = message.get("text")
 
-    body = event.get("body")
-    if not body:
+    except (AttributeError, TypeError) as err:
+        print("an error occurred: ", err)
         return
-
-    content = json.loads(body)
-    message = content.get("message")
-    chat = message.get("chat")
-    telegram_chat_id = chat.get("id")
-    raw_input = message.get("text")
 
     if not raw_input or not telegram_chat_id:
         return
@@ -38,15 +39,11 @@ def lambda_handler(event, context):
     )
 
     if input != "/start":
-        dynamodb = boto3.resource('dynamodb')
+        dynamodb = boto3.resource("dynamodb")
         table = dynamodb.Table(TABLE_NAME)
 
         table.update_item(
-            Key={
-                'chat_id': str(telegram_chat_id)
-            },
+            Key={"chat_id": str(telegram_chat_id)},
             UpdateExpression="SET city_name = :city_name",
-            ExpressionAttributeValues={
-                ':city_name': str(city_name)
-            },
+            ExpressionAttributeValues={":city_name": str(city_name)},
         )

@@ -28,11 +28,11 @@ def get_weather_message(city_name):
         f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={WEATHER_API_KEY}&units=metric"
     )
     weather_data = response.json()
-    if not weather_data or weather_data.get('cod') != 200:
+    if not weather_data or weather_data.get("cod") != 200:
         return
 
     message = (
-        f"Weather in {city_name}\n"
+        f"Weather in {city_name.capitalize()}\n"
         f"Temperature: {weather_data['main']['temp']} °C, {weather_data['weather'][0]['description']}\n"
         f"Wind: {weather_data['wind']['speed']} m/s"
     )
@@ -65,8 +65,9 @@ def lambda_handler(event, context):
 
     if city_name is None:
         message = (
-            "Please provide your city name. "
-            "If you decide to change city name, just type a new city name"
+            "Please provide the city name. "
+            "You'll received notifications hourly. "
+            "To change the city name, just type a new city name in chat"
         )
     else:
         message = get_weather_message(city_name)
