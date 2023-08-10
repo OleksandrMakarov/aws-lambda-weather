@@ -4,7 +4,7 @@
 *.zip
 
 # [TERRAFORM]
-variables.tf
+/terraform/variables.tf
 
 *.tfvars
 .terraform*
